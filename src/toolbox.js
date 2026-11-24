@@ -12,12 +12,34 @@ const HOME = process.env.TOOLBOX_HOME || process.env.DEV_RADAR_HOME || path.join
 const LEGACY_STATE_FILE = path.join(os.homedir(), '.dev-radar', 'state.json');
 const STATE_FILE = path.join(HOME, 'state.json');
 
+function normalizeState(parsed) {
+  return {
+    projects: Array.isArray(parsed?.projects) ? parsed.projects : [],
+    sessions: parsed?.sessions && typeof parsed.sessions === 'object' ? parsed.sessions : {},
+    notes: parsed?.notes && typeof parsed.notes === 'object' ? parsed.notes : {},
+    aws: parsed?.aws && typeof parsed.aws === 'object'
+      ? parsed.aws
+      : { region: 'us-east-2', profile: null }
+  };
+}
+
 function loadState() {
   try {
-    const parsed = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
-    return { projects: Array.isArray(parsed.projects) ? parsed.projects : [], sessions: parsed.sessions || {}, notes: parsed.notes || {}, aws: parsed.aws || { region: 'us-east-2', profile: null } };
-  } catch {
-    return { projects: [], sessions: {}, notes: {}, aws: { region: 'us-east-2', profile: null } };
+    return normalizeState(JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')));
+  } catch (error) {
+    // A missing Toolbox state file is the one safe point to import Radar state.
+    // Keep the legacy file intact as a backup after migration.
+    if (error.code !== 'ENOENT' || path.resolve(STATE_FILE) === path.resolve(LEGACY_STATE_FILE)) {
+      return normalizeState({});
+    }
+
+    try {
+      const legacyState = normalizeState(JSON.parse(fs.readFileSync(LEGACY_STATE_FILE, 'utf8')));
+      saveState(legacyState);
+      return legacyState;
+    } catch {
+      return normalizeState({});
+    }
   }
 }
 function saveState(state) {

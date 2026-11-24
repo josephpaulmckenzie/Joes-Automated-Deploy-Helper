@@ -1,0 +1,9 @@
+{
+  "name": "toolbox",
+  "version": "1.1.0",
+  "description": "Unified personal development toolbox",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}

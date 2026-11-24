@@ -16,7 +16,7 @@ bash install.sh
 source ~/.zshrc
 ```
 
-Installs `toolbox` in `~/bin`. The old `radar` command remains as a compatibility alias to `toolbox menu`. Existing state is migrated from `~/.dev-radar/state.json` when no Toolbox state exists and then stored at `~/.toolbox/state.json`. Set `TOOLBOX_HOME` to override.
+Installs `toolbox` in `~/bin`. The old `radar` command remains as a compatibility alias to `toolbox menu`. If `~/.toolbox/state.json` does not exist, Toolbox imports the existing `~/.dev-radar/state.json` data and writes it to the new location. The original Radar file is kept as a backup. Set `TOOLBOX_HOME` to override the Toolbox state directory.
 
 ## Interactive menu
 ```bash
